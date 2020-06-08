@@ -3,6 +3,7 @@ package com.example.coursepro
 import android.content.Context
 import android.content.SharedPreferences
 import android.os.Bundle
+import android.util.Log
 import androidx.preference.PreferenceManager
 import android.view.View
 import android.widget.Button
@@ -17,6 +18,8 @@ import com.example.coursepro.lists.ProfilListeToDo
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.google.gson.reflect.TypeToken
+import github.com.vikramezhil.dks.speech.Dks
+import github.com.vikramezhil.dks.speech.DksListener
 import java.io.File
 
 class ShowListActivity : GenericActivity(), ItemAdapter.ActionListener, View.OnClickListener {
@@ -66,7 +69,65 @@ class ShowListActivity : GenericActivity(), ItemAdapter.ActionListener, View.OnC
         getPlayerList()
         val dataSet : List<ItemToDo>? = listeToDo!!.lesItems
         adapter!!.setData(dataSet)
+
+
+        /*
+        Speech recognition
+         */
+        val dks = Dks(application, supportFragmentManager, object: DksListener {
+            override fun onDksLiveSpeechResult(liveSpeechResult: String) {
+                Log.d("DKS", "Speech result - $liveSpeechResult")
+            }
+
+            override fun onDksFinalSpeechResult(speechResult: String) {
+                Log.d("DKS", "Final speech result - $speechResult")
+                voiceListener(speechResult)
+            }
+
+            override fun onDksLiveSpeechFrequency(frequency: Float) {
+                //Log.d("DKS", "frequency - $frequency")
+            }
+
+            override fun onDksLanguagesAvailable(defaultLanguage: String?, supportedLanguages: ArrayList<String>?) {
+                //Log.d("DKS", "defaultLanguage - $defaultLanguage")
+                //Log.d("DKS", "supportedLanguages - $supportedLanguages")
+            }
+
+            override fun onDksSpeechError(errMsg: String) {
+                Toast.makeText(applicationContext, "Erreur avec la reconnaissance vocal : $errMsg", Toast.LENGTH_LONG).show()
+                Log.d("DKS", "errMsg - $errMsg")
+            }
+        })
+
+        dks.startSpeechRecognition()
     }
+
+    /*
+    Voice listener : start onItemClicked() if the works spoken match one of the item
+     */
+    private fun voiceListener(sentence : String) {
+
+        val wordsSpoken = sentence.toLowerCase().split(" ")
+
+        for (item in listeToDo!!.lesItems) {
+            var check = true
+            val itemDescs = item.description.toLowerCase().split(" ")
+
+            for (itemDesc in itemDescs) {
+                if (!wordsSpoken.contains(itemDesc)) {
+                    check = false
+                }
+            }
+            if (check) {
+                onItemClicked(item, !item.fait)
+                val dataSet : List<ItemToDo>? = listeToDo!!.lesItems
+                adapter!!.setData(dataSet)
+                return
+            }
+        }
+    }
+
+
 
     private fun newAdapter() : ItemAdapter = ItemAdapter(actionListener = this)
 
