@@ -81,7 +81,9 @@ class ShowListActivity : GenericActivity(), ItemAdapter.ActionListener, View.OnC
 
             override fun onDksFinalSpeechResult(speechResult: String) {
                 Log.d("DKS", "Final speech result - $speechResult")
-                voiceListener(speechResult)
+                checkItemVoice(speechResult)
+                addItemVoice(speechResult)
+                deleteItemVoice(speechResult)
             }
 
             override fun onDksLiveSpeechFrequency(frequency: Float) {
@@ -103,16 +105,18 @@ class ShowListActivity : GenericActivity(), ItemAdapter.ActionListener, View.OnC
     }
 
     /*
-    Voice listener : start onItemClicked() if the works spoken match one of the item
+    Voice listener : check / uncheck an item if the works spoken match one of the item
      */
-    private fun voiceListener(sentence : String) {
+    private fun checkItemVoice(sentence : String) {
 
         val wordsSpoken = sentence.toLowerCase().split(" ")
 
+        // Iterate over all item to check if one is spoken
         for (item in listeToDo!!.lesItems) {
             var check = true
             val itemDescs = item.description.toLowerCase().split(" ")
 
+            // Check if all words of the item is spoken
             for (itemDesc in itemDescs) {
                 if (!wordsSpoken.contains(itemDesc)) {
                     check = false
@@ -122,6 +126,77 @@ class ShowListActivity : GenericActivity(), ItemAdapter.ActionListener, View.OnC
                 onItemClicked(item, !item.fait)
                 val dataSet : List<ItemToDo>? = listeToDo!!.lesItems
                 adapter!!.setData(dataSet)
+                return
+            }
+        }
+    }
+
+    /*
+    Voice listener : create an item if the word "ajouter" is spoken
+     */
+    private fun addItemVoice(sentence: String) {
+
+        val wordsSpoken = sentence.toLowerCase().split(" ")
+
+        // Detect the word "ajouter" and add an item with the words after "ajouter"
+        for ((index, word) in wordsSpoken.withIndex()) {
+            if (word == "ajouter") {
+                var item = ""
+                val nbWords = wordsSpoken.size
+                var i = index + 1
+
+                while (i < nbWords) {
+                    item += " " + wordsSpoken[i]
+                    i++
+                }
+
+                if (item != "") {
+                    createItem(item)
+                }
+                return
+            }
+        }
+    }
+
+    /*
+    Voice listener : delete an item if the word "supprimer" is spoken
+     */
+    private fun deleteItemVoice(sentence: String) {
+
+        val wordsSpoken = sentence.toLowerCase().split(" ")
+
+        for ((index, word) in wordsSpoken.withIndex()) {
+            if (word == "supprimer") {
+                val itemSpoken = mutableListOf<String>()
+                val nbWords = wordsSpoken.size
+                var i = index
+
+                // Get all the words after "supprimer"
+                while (i < nbWords) {
+                    itemSpoken.add(wordsSpoken[i])
+                    i++
+                }
+
+                if (itemSpoken.size > 0) {
+
+                    // Iterate over all item to check if one match with the one spoken
+                    for (item in listeToDo!!.lesItems) {
+                        var check = true
+                        val itemDescs = item.description.toLowerCase().split(" ")
+
+                        // Check if all words of the item is spoken
+                        for (itemDesc in itemDescs) {
+                            if (!itemSpoken.contains(itemDesc)) {
+                                check = false
+                            }
+                        }
+                        if (check) {
+                            deleteItem(item)
+                            return
+                        }
+                    }
+
+                }
                 return
             }
         }
@@ -160,36 +235,61 @@ class ShowListActivity : GenericActivity(), ItemAdapter.ActionListener, View.OnC
     override fun onClick(v: View) {
         when (v.id) {
             R.id.OKBtnShowList -> {
-
-                val listPlayer = getPlayerList()
-
                 val descItem = refListInput!!.text.toString()
-                // Check if an item with the same description doesn't already exists
-                if (!listeToDo!!.rechercherItem(descItem)) {
-                    // Update listeToDo and profilListeToDo
-                    val newItem : ItemToDo = ItemToDo(descItem)
-                    profilListeToDo!!.ajoutItem(listeToDo, newItem)
-
-                    // Serialize the new list of players
-                    val gsonPretty = GsonBuilder().setPrettyPrinting().create()
-                    listPlayer.add(profilListeToDo!!)
-                    val jsonProfiles = gsonPretty.toJson(listPlayer)
-
-                    /// Update the file
-                    val file = File(filesDir, filename)
-                    openFileOutput(filename, Context.MODE_PRIVATE).use {
-                        it.write(jsonProfiles.toByteArray())
-                    }
-
-                    val dataSet : List<ItemToDo>? = listeToDo!!.lesItems
-                    adapter!!.setData(dataSet)
-                }
-                else {
-                    Toast.makeText(applicationContext, R.string.itemAlreadyExist, Toast.LENGTH_LONG).show()
-                }
+                createItem(descItem)
             }
         }
     }
+
+    private fun createItem(descItem : String) {
+        val listPlayer = getPlayerList()
+
+        // Check if an item with the same description doesn't already exists
+        if (!listeToDo!!.rechercherItem(descItem)) {
+            // Update listeToDo and profilListeToDo
+            val newItem: ItemToDo = ItemToDo(descItem)
+            profilListeToDo!!.ajoutItem(listeToDo, newItem)
+
+            // Serialize the new list of players
+            val gsonPretty = GsonBuilder().setPrettyPrinting().create()
+            listPlayer.add(profilListeToDo!!)
+            val jsonProfiles = gsonPretty.toJson(listPlayer)
+
+            /// Update the file
+            val file = File(filesDir, filename)
+            openFileOutput(filename, Context.MODE_PRIVATE).use {
+                it.write(jsonProfiles.toByteArray())
+            }
+
+            val dataSet: List<ItemToDo>? = listeToDo!!.lesItems
+            adapter!!.setData(dataSet)
+        } else {
+            Toast.makeText(applicationContext, R.string.itemAlreadyExist, Toast.LENGTH_LONG).show()
+        }
+    }
+
+    private fun deleteItem(item : ItemToDo) {
+        val listPlayer = getPlayerList()
+
+        // Update listeToDo and profilListeToDo
+        profilListeToDo!!.deleteItem(listeToDo, item)
+
+        // Serialize the new list of players
+        val gsonPretty = GsonBuilder().setPrettyPrinting().create()
+        listPlayer.add(profilListeToDo!!)
+        val jsonProfiles = gsonPretty.toJson(listPlayer)
+
+        /// Update the file
+        val file = File(filesDir, filename)
+        openFileOutput(filename, Context.MODE_PRIVATE).use {
+            it.write(jsonProfiles.toByteArray())
+        }
+
+        val dataSet: List<ItemToDo>? = listeToDo!!.lesItems
+        adapter!!.setData(dataSet)
+
+    }
+
 
     // Get the list of player's lists and remove the current player
     private fun getPlayerList() : MutableList<ProfilListeToDo> {

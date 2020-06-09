@@ -17,6 +17,10 @@ class ListeToDo (var titreListeToDo: String = "",  var lesItems: MutableList<Ite
         lesItems.add(unItem)
     }
 
+    fun deleteItem(unItem : ItemToDo) {
+        lesItems.remove(unItem)
+    }
+
     fun updateItem(unItem : ItemToDo) {
         var updatedItem : MutableList<ItemToDo> = mutableListOf()
         for (item : ItemToDo in lesItems) {
