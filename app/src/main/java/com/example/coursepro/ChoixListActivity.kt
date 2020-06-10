@@ -19,7 +19,7 @@ import com.google.gson.GsonBuilder
 import com.google.gson.reflect.TypeToken
 import java.io.File
 
-class ChoixListActivity : GenericActivity(), ListeAdapter.ActionListener, View.OnClickListener {
+class ChoixListActivity : GenericActivity(), ListeAdapter.ActionListener {
 
     private var adapter : ListeAdapter? = null
     private var refBtnOK: Button? = null
@@ -43,9 +43,6 @@ class ChoixListActivity : GenericActivity(), ListeAdapter.ActionListener, View.O
         adapter = newAdapter()
         prefs = PreferenceManager.getDefaultSharedPreferences(this)
         filename = "players"
-
-        refBtnOK!!.setOnClickListener(this)
-
 
         /*
         Get the pseudo from MainActivity
@@ -100,42 +97,6 @@ class ChoixListActivity : GenericActivity(), ListeAdapter.ActionListener, View.O
         startActivity(intent)
     }
 
-    /*
-    OK Button listener
-     */
-    override fun onClick(v: View) {
-        when (v.id) {
-            R.id.OKBtnChoixList -> {
-
-                val listPlayer : MutableList<ProfilListeToDo> = getPlayerList()
-
-                val title = refListInput!!.text.toString()
-                // Check if a list with the same title doesn't already exists
-                if (!profilListeToDo!!.listAlreadyExists(title)) {
-                    // Add the new list
-                    profilListeToDo!!.ajouteListe(ListeToDo(title))
-                    // Update the json list of profiles list
-                    listPlayer.add(profilListeToDo!!)
-
-                    // Update the file
-                    val gsonPretty = GsonBuilder().setPrettyPrinting().create()
-                    val jsonProfiles = gsonPretty.toJson(listPlayer)
-                    val file = File(filesDir, filename)
-                    openFileOutput(filename, Context.MODE_PRIVATE).use {
-                        it.write(jsonProfiles.toByteArray())
-                    }
-
-                    // Update display
-                    val dataSet : List<ListeToDo>? = profilListeToDo?.mesListeToDo
-                    adapter!!.setData(dataSet)
-                }
-                else {
-                    Toast.makeText(applicationContext, R.string.listAlreadyExist, Toast.LENGTH_LONG).show()
-                }
-            }
-        }
-    }
-
     // Get the list of player's lists and update profilListeToDo
     private fun getPlayerList() : MutableList<ProfilListeToDo> {
 
@@ -159,5 +120,36 @@ class ChoixListActivity : GenericActivity(), ListeAdapter.ActionListener, View.O
             profilListeToDo = pseudo?.let { ProfilListeToDo(it) }
         }
         return listPlayer
+    }
+
+    // Intents :
+
+    // Add new list
+    fun newList(view: View) {
+        val listPlayer : MutableList<ProfilListeToDo> = getPlayerList()
+
+        val title = refListInput!!.text.toString()
+        // Check if a list with the same title already exists
+        if (profilListeToDo!!.listAlreadyExists(title)) {
+            Toast.makeText(applicationContext, R.string.listAlreadyExist, Toast.LENGTH_LONG).show()
+            return
+        }
+
+        // Add the new list
+        profilListeToDo!!.ajouteListe(ListeToDo(title))
+        // Update the json list of profiles list
+        listPlayer.add(profilListeToDo!!)
+
+        // Update the file
+        val gsonPretty = GsonBuilder().setPrettyPrinting().create()
+        val jsonProfiles = gsonPretty.toJson(listPlayer)
+        val file = File(filesDir, filename)
+        openFileOutput(filename, Context.MODE_PRIVATE).use {
+            it.write(jsonProfiles.toByteArray())
+        }
+
+        // Update display
+        val dataSet : List<ListeToDo>? = profilListeToDo?.mesListeToDo
+        adapter!!.setData(dataSet)
     }
 }
