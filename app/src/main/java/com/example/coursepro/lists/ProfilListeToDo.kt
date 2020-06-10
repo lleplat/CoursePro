@@ -1,5 +1,6 @@
 package com.example.coursepro.lists
 
+import android.util.Log
 import java.io.Serializable
 
 class ProfilListeToDo(var login : String = "") : Serializable {
@@ -17,33 +18,37 @@ class ProfilListeToDo(var login : String = "") : Serializable {
 
     // Add unItem to the list uneListe if it is present in mesListeToDo
     fun ajoutItem(uneListe: ListeToDo?, unItem : ItemToDo) {
-        var updatedListes : MutableList<ListeToDo> = mutableListOf()
+        val updatedListes : MutableList<ListeToDo> = mutableListOf()
         for (list : ListeToDo in mesListeToDo) {
             if (list.titreListeToDo == uneListe!!.titreListeToDo) {
-                list.ajoutItem(unItem)
                 uneListe.ajoutItem((unItem))
+                updatedListes.add(uneListe)
             }
-            updatedListes.add(list)
+            else {
+                updatedListes.add(list)
+            }
         }
         mesListeToDo = updatedListes
     }
 
     // Delete unItem to the list uneListe if it is present in mesListeToDo
     fun deleteItem(uneListe: ListeToDo?, unItem : ItemToDo) {
-        var updatedListes : MutableList<ListeToDo> = mutableListOf()
+        val updatedListes : MutableList<ListeToDo> = mutableListOf()
         for (list : ListeToDo in mesListeToDo) {
             if (list.titreListeToDo == uneListe!!.titreListeToDo) {
-                list.deleteItem(unItem)
-                uneListe.deleteItem((unItem))
+                uneListe.deleteItem(unItem)
+                updatedListes.add(uneListe)
             }
-            updatedListes.add(list)
+            else {
+                updatedListes.add(list)
+            }
         }
         mesListeToDo = updatedListes
     }
 
     // Update unItem from the list uneListe
     fun updateItem(uneListe: ListeToDo?, unItem : ItemToDo) {
-        var updatedListes : MutableList<ListeToDo> = mutableListOf()
+        val updatedListes : MutableList<ListeToDo> = mutableListOf()
         for (list : ListeToDo in mesListeToDo) {
             if (list.titreListeToDo == uneListe!!.titreListeToDo) {
                 list.updateItem(unItem)

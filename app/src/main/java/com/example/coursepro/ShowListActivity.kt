@@ -21,6 +21,8 @@ import com.google.gson.reflect.TypeToken
 import github.com.vikramezhil.dks.speech.Dks
 import github.com.vikramezhil.dks.speech.DksListener
 import java.io.File
+import java.util.*
+import kotlin.collections.ArrayList
 
 class ShowListActivity : GenericActivity(), ItemAdapter.ActionListener, View.OnClickListener {
 
@@ -31,6 +33,7 @@ class ShowListActivity : GenericActivity(), ItemAdapter.ActionListener, View.OnC
     private var profilListeToDo : ProfilListeToDo? = null
     private var listeToDo : ListeToDo? = null
     private var filename : String? = null
+    private lateinit var dks: Dks
 
 
 
@@ -47,7 +50,7 @@ class ShowListActivity : GenericActivity(), ItemAdapter.ActionListener, View.OnC
         prefs = PreferenceManager.getDefaultSharedPreferences(this)
         filename = "players"
 
-        refBtnOK?.let { btn -> btn.setOnClickListener(this) }
+        refBtnOK?.setOnClickListener(this)
 
 
         /*
@@ -74,14 +77,14 @@ class ShowListActivity : GenericActivity(), ItemAdapter.ActionListener, View.OnC
         /*
         Speech recognition
          */
-        val dks = Dks(application, supportFragmentManager, object: DksListener {
+        dks = Dks(application, supportFragmentManager, object: DksListener {
             override fun onDksLiveSpeechResult(liveSpeechResult: String) {
-                Log.d("DKS", "Speech result - $liveSpeechResult")
+                //Log.d("DKS", "Speech result - $liveSpeechResult")
             }
 
             override fun onDksFinalSpeechResult(speechResult: String) {
                 Log.d("DKS", "Final speech result - $speechResult")
-                checkItemVoice(speechResult)
+                //checkItemVoice(speechResult)
                 addItemVoice(speechResult)
                 deleteItemVoice(speechResult)
             }
@@ -109,12 +112,12 @@ class ShowListActivity : GenericActivity(), ItemAdapter.ActionListener, View.OnC
      */
     private fun checkItemVoice(sentence : String) {
 
-        val wordsSpoken = sentence.toLowerCase().split(" ")
+        val wordsSpoken = sentence.toLowerCase(Locale.getDefault()).split(" ")
 
         // Iterate over all item to check if one is spoken
         for (item in listeToDo!!.lesItems) {
             var check = true
-            val itemDescs = item.description.toLowerCase().split(" ")
+            val itemDescs = item.description.toLowerCase(Locale.getDefault()).split(" ")
 
             // Check if all words of the item is spoken
             for (itemDesc in itemDescs) {
@@ -136,7 +139,7 @@ class ShowListActivity : GenericActivity(), ItemAdapter.ActionListener, View.OnC
      */
     private fun addItemVoice(sentence: String) {
 
-        val wordsSpoken = sentence.toLowerCase().split(" ")
+        val wordsSpoken = sentence.toLowerCase(Locale.getDefault()).split(" ")
 
         // Detect the word "ajouter" and add an item with the words after "ajouter"
         for ((index, word) in wordsSpoken.withIndex()) {
@@ -146,11 +149,12 @@ class ShowListActivity : GenericActivity(), ItemAdapter.ActionListener, View.OnC
                 var i = index + 1
 
                 while (i < nbWords) {
-                    item += " " + wordsSpoken[i]
+                    item += wordsSpoken[i] + " "
                     i++
                 }
 
                 if (item != "") {
+                    item = item.dropLast(1)
                     createItem(item)
                 }
                 return
@@ -163,7 +167,7 @@ class ShowListActivity : GenericActivity(), ItemAdapter.ActionListener, View.OnC
      */
     private fun deleteItemVoice(sentence: String) {
 
-        val wordsSpoken = sentence.toLowerCase().split(" ")
+        val wordsSpoken = sentence.toLowerCase(Locale.getDefault()).split(" ")
 
         for ((index, word) in wordsSpoken.withIndex()) {
             if (word == "supprimer") {
@@ -182,7 +186,7 @@ class ShowListActivity : GenericActivity(), ItemAdapter.ActionListener, View.OnC
                     // Iterate over all item to check if one match with the one spoken
                     for (item in listeToDo!!.lesItems) {
                         var check = true
-                        val itemDescs = item.description.toLowerCase().split(" ")
+                        val itemDescs = item.description.toLowerCase(Locale.getDefault()).split(" ")
 
                         // Check if all words of the item is spoken
                         for (itemDesc in itemDescs) {
@@ -223,7 +227,6 @@ class ShowListActivity : GenericActivity(), ItemAdapter.ActionListener, View.OnC
         val jsonProfiles = gsonPretty.toJson(listPlayer)
 
         // Update the file
-        val file = File(filesDir, filename)
         openFileOutput(filename, Context.MODE_PRIVATE).use {
             it.write(jsonProfiles.toByteArray())
         }
@@ -241,13 +244,19 @@ class ShowListActivity : GenericActivity(), ItemAdapter.ActionListener, View.OnC
         }
     }
 
+    override fun onStop() {
+        super.onStop()
+        dks.closeSpeechOperations()
+    }
+
     private fun createItem(descItem : String) {
         val listPlayer = getPlayerList()
 
         // Check if an item with the same description doesn't already exists
         if (!listeToDo!!.rechercherItem(descItem)) {
+
             // Update listeToDo and profilListeToDo
-            val newItem: ItemToDo = ItemToDo(descItem)
+            val newItem = ItemToDo(descItem)
             profilListeToDo!!.ajoutItem(listeToDo, newItem)
 
             // Serialize the new list of players
@@ -256,7 +265,6 @@ class ShowListActivity : GenericActivity(), ItemAdapter.ActionListener, View.OnC
             val jsonProfiles = gsonPretty.toJson(listPlayer)
 
             /// Update the file
-            val file = File(filesDir, filename)
             openFileOutput(filename, Context.MODE_PRIVATE).use {
                 it.write(jsonProfiles.toByteArray())
             }
@@ -280,7 +288,6 @@ class ShowListActivity : GenericActivity(), ItemAdapter.ActionListener, View.OnC
         val jsonProfiles = gsonPretty.toJson(listPlayer)
 
         /// Update the file
-        val file = File(filesDir, filename)
         openFileOutput(filename, Context.MODE_PRIVATE).use {
             it.write(jsonProfiles.toByteArray())
         }
@@ -294,7 +301,7 @@ class ShowListActivity : GenericActivity(), ItemAdapter.ActionListener, View.OnC
     // Get the list of player's lists and remove the current player
     private fun getPlayerList() : MutableList<ProfilListeToDo> {
         val file = File(filesDir, filename)
-        var jsonProfiles : String = file.readText()
+        val jsonProfiles : String = file.readText()
         val gson = Gson()
         val listPlayerType = object : TypeToken<List<ProfilListeToDo>>() {}.type
         var listPlayer : MutableList<ProfilListeToDo>? = gson.fromJson(jsonProfiles, listPlayerType)
