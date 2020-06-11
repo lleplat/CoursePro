@@ -9,4 +9,5 @@
     <string name="listAlreadyExist">Cette liste existe déjà.</string>
     <string name="itemAlreadyExist">Cet item existe déjà.</string>
     <string name="pseudoDeleted">Les profils existants ont été supprimés.</string>
+    <string name="quantity">Quantité</string>
 </resources>

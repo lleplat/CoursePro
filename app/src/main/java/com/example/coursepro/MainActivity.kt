@@ -7,13 +7,14 @@ import android.view.View
 import android.widget.ArrayAdapter
 import android.widget.AutoCompleteTextView
 import android.widget.Button
+import androidx.appcompat.app.AppCompatActivity
 import androidx.preference.PreferenceManager
 import com.example.coursepro.lists.ProfilListeToDo
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import java.io.File
 
-class MainActivity : GenericActivity(), View.OnClickListener {
+class MainActivity : AppCompatActivity() {
 
     private var refBtnOK: Button? = null
     private var refPseudoInput: AutoCompleteTextView? = null
@@ -33,8 +34,6 @@ class MainActivity : GenericActivity(), View.OnClickListener {
         prefs = PreferenceManager.getDefaultSharedPreferences(this)
         filename = "players"
 
-        refBtnOK?.let { btn -> btn.setOnClickListener(this) }
-
         /*
         Check if the players file exist
          */
@@ -42,7 +41,6 @@ class MainActivity : GenericActivity(), View.OnClickListener {
         if (!file.exists()) {
             file.createNewFile()
         }
-
 
         /*
         Set the auto-completion
@@ -60,26 +58,6 @@ class MainActivity : GenericActivity(), View.OnClickListener {
     }
 
 
-    /*
-    OK Button Listener
-     */
-    override fun onClick(v: View) {
-        when (v.id) {
-            R.id.OKBtnMain -> {
-                val pseudo = refPseudoInput!!.text.toString()
-
-                val editor : SharedPreferences.Editor = prefs!!.edit()
-                editor.putString("pseudo", pseudo)
-                editor.commit()
-
-                val bundle = Bundle()
-                bundle.putString("pseudo", pseudo)
-                val intent = Intent(this, ChoixListActivity::class.java)
-                intent.putExtras(bundle)
-                startActivity(intent)
-            }
-        }
-    }
 
 
     /*
@@ -102,8 +80,24 @@ class MainActivity : GenericActivity(), View.OnClickListener {
         refPseudoInput!!.setAdapter(adapter)
     }
 
+    // Intents
 
+    /*
+    Pseudo OK button click
+     */
+    fun pseudoOKButtonClick(view: View) {
+        val pseudo = refPseudoInput!!.text.toString()
 
+        val editor : SharedPreferences.Editor = prefs!!.edit()
+        editor.putString("pseudo", pseudo)
+        editor.commit()
 
+        val bundle = Bundle()
+        bundle.putString("pseudo", pseudo)
+        val intent = Intent(this, ChoixListActivity::class.java)
+        intent.putExtras(bundle)
+        startActivity(intent)
+    }
 
 }
+
