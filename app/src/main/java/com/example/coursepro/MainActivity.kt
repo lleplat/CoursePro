@@ -5,79 +5,58 @@ import android.content.SharedPreferences
 import android.os.Bundle
 import android.view.View
 import android.widget.ArrayAdapter
-import android.widget.AutoCompleteTextView
-import android.widget.Button
 import androidx.appcompat.app.AppCompatActivity
 import androidx.preference.PreferenceManager
 import com.example.coursepro.lists.ProfilListeToDo
-import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
+import kotlinx.android.synthetic.main.activity_main.*
 import java.io.File
 
-class MainActivity : AppCompatActivity() {
 
-    private var refBtnOK: Button? = null
-    private var refPseudoInput: AutoCompleteTextView? = null
-    private var prefs : SharedPreferences ?= null
-    private var filename : String? = null
+var courseModel: CourseModel =
+    CourseModel(File.createTempFile("Log-", "Course"))
+
+class MainActivity : AppCompatActivity() {
+    private lateinit var prefs : SharedPreferences
+    private val saveFileName : String = "players"
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        /*
-        Declarations
-         */
-        refBtnOK = findViewById(R.id.OKBtnMain)
-        refPseudoInput = findViewById(R.id.pseudoInputMain)
-        prefs = PreferenceManager.getDefaultSharedPreferences(this)
-        filename = "players"
+        setReferences()
 
-        /*
-        Check if the players file exist
-         */
-        val file = File(filesDir, filename)
-        if (!file.exists()) {
-            file.createNewFile()
-        }
-
-        /*
-        Set the auto-completion
-         */
-        autoCompletion()
+        // Set the auto-completion
+        autoCompletion(courseModel.usersList)
     }
 
 
     override fun onStart() {
         super.onStart()
-
-        val pseudoPref : String? = prefs!!.getString("pseudo", "Pseudo")
-        refPseudoInput?.setText(pseudoPref)
-        autoCompletion()
+        val pseudoPref : String = prefs.getString("pseudo", "Pseudo") ?: ""
+        pseudoInputMain.setText(pseudoPref)
+        autoCompletion(courseModel.usersList)
     }
 
+    // Internal functions:
 
-
+    private fun setReferences() {
+        // Declarations
+        courseModel =
+            CourseModel(File(filesDir, saveFileName))
+        prefs = PreferenceManager.getDefaultSharedPreferences(this)
+    }
 
     /*
     Set the auto-completion
      */
-    private fun autoCompletion() {
-        val file = File(filesDir, filename)
-        var jsonProfiles : String = file.readText()
-        val gson = Gson()
-        val listPlayerType = object : TypeToken<List<ProfilListeToDo>>() {}.type
-        var listPlayer : MutableList<ProfilListeToDo>? = gson.fromJson(jsonProfiles, listPlayerType)
-        if (listPlayer == null) {
-            listPlayer = mutableListOf()
-        }
-        var pseudoList : MutableList<String> = mutableListOf<String>()
-        listPlayer.forEach { profilListe ->
+    private fun autoCompletion(usersList: List<ProfilListeToDo>) {
+        val pseudoList : MutableList<String> = mutableListOf<String>()
+        usersList.forEach { profilListe ->
             pseudoList.add(profilListe.login)
         }
         val adapter : ArrayAdapter<String> = ArrayAdapter<String>(this, android.R.layout.simple_dropdown_item_1line, pseudoList)
-        refPseudoInput!!.setAdapter(adapter)
+        pseudoInputMain.setAdapter(adapter)
     }
 
     // Intents
@@ -86,17 +65,17 @@ class MainActivity : AppCompatActivity() {
     Pseudo OK button click
      */
     fun pseudoOKButtonClick(view: View) {
-        val pseudo = refPseudoInput!!.text.toString()
+        val pseudo = pseudoInputMain.text.toString()
 
-        val editor : SharedPreferences.Editor = prefs!!.edit()
-        editor.putString("pseudo", pseudo)
-        editor.commit()
+        courseModel.setCurrentUser(ProfilListeToDo(pseudo))
 
-        val bundle = Bundle()
-        bundle.putString("pseudo", pseudo)
-        val intent = Intent(this, ChoixListActivity::class.java)
-        intent.putExtras(bundle)
-        startActivity(intent)
+        if (setNicknameAsDefault.isChecked) {
+            val editor : SharedPreferences.Editor = prefs.edit()
+            editor.putString("pseudo", pseudo)
+            editor.apply()
+        }
+
+        startActivity(Intent(this, ChoixListActivity::class.java))
     }
 
 }

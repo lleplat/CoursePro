@@ -4,21 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:onClick="pseudoOKButtonClick"
+    android:background="@drawable/grocery_cart_with_item_"
     tools:context=".MainActivity">
-
-    <FrameLayout
-        android:id="@+id/frameLayout"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="@drawable/grocery_cart_with_item_"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:visibility="visible">
-
-    </FrameLayout>
 
     <TextView
         android:id="@+id/textView"
@@ -37,32 +24,20 @@
         android:id="@+id/constraintLayout"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        android:background="@android:drawable/editbox_background_normal"
+        android:padding="8dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
-
-        <FrameLayout
-            android:id="@+id/frameLayout2"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:background="@android:drawable/editbox_background"
-            android:visibility="visible"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
-
-        </FrameLayout>
 
         <Button
             android:id="@+id/OKBtnMain"
             style="@android:style/Widget.Material.Light.Button.Borderless.Small"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_height="0dp"
             android:layout_marginEnd="8dp"
             android:onClick="pseudoOKButtonClick"
             android:text="@android:string/ok"
@@ -75,7 +50,6 @@
             style="@android:style/Widget.Material.AutoCompleteTextView"
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_marginStart="8dp"
             android:hint="@string/pseudo"
             android:paddingStart="?attr/listPreferredItemPaddingStart"
             android:paddingEnd="?attr/listPreferredItemPaddingEnd"
@@ -84,6 +58,19 @@
             app:layout_constraintEnd_toStartOf="@+id/OKBtnMain"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
+
+        <CheckBox
+            android:id="@+id/setNicknameAsDefault"
+            style="@android:style/Widget.Material.CompoundButton.CheckBox"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            android:text="@string/saveAsDefault"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="@+id/OKBtnMain"
+            app:layout_constraintStart_toStartOf="@+id/pseudoInputMain"
+            app:layout_constraintTop_toBottomOf="@id/pseudoInputMain"
+            tools:visibility="visible" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

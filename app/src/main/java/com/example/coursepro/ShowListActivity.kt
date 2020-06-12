@@ -10,7 +10,6 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.example.coursepro.adapters.ItemAdapter
 import com.example.coursepro.lists.ItemToDo
 import com.example.coursepro.lists.ListeToDo
@@ -20,12 +19,13 @@ import com.google.gson.GsonBuilder
 import com.google.gson.reflect.TypeToken
 import github.com.vikramezhil.dks.speech.Dks
 import github.com.vikramezhil.dks.speech.DksListener
+import kotlinx.android.synthetic.main.activity_show_list.*
 import java.io.File
 import java.util.*
 import kotlin.collections.ArrayList
 
-class ShowListActivity : GenericActivity(), ItemAdapter.ActionListener, View.OnClickListener {
-
+class ShowListActivity : GenericActivity(), ItemAdapter.ActionListener {
+    private var model = courseModel
     private var adapter : ItemAdapter? = null
     private var refBtnOK: Button? = null
     private var refListInput: EditText? = null
@@ -50,26 +50,23 @@ class ShowListActivity : GenericActivity(), ItemAdapter.ActionListener, View.OnC
         prefs = PreferenceManager.getDefaultSharedPreferences(this)
         filename = "players"
 
-        refBtnOK?.setOnClickListener(this)
-
 
         /*
         Get info from ChoixListActivity
          */
         val bundle = this.intent.extras
-        listeToDo = bundle!!.getSerializable("liste") as ListeToDo
-        profilListeToDo = bundle.getSerializable("profilListe") as ProfilListeToDo
-
+        listeToDo = model.currentList
+        profilListeToDo = model.currentUser
 
         /*
         RecyclerView
          */
-        val list : RecyclerView = findViewById(R.id.listOfItem)
+        val list = listOfItem
 
         list.adapter = adapter
         list.layoutManager = LinearLayoutManager(this)
 
-        getPlayerList()
+        // getPlayerList()
         val dataSet : List<ItemToDo>? = listeToDo!!.lesItems
         adapter!!.setData(dataSet)
 
@@ -214,34 +211,16 @@ class ShowListActivity : GenericActivity(), ItemAdapter.ActionListener, View.OnC
     Item listener
      */
     override fun onItemClicked(itemToDo: ItemToDo, value : Boolean) {
-
-        val listPlayer = getPlayerList()
-
         // Update itemToDo, listeToDo and profilListeToDo
         itemToDo.fait = value
-        profilListeToDo!!.updateItem(listeToDo, itemToDo)
-
-        // Serialize the new list of players
-        val gsonPretty = GsonBuilder().setPrettyPrinting().create()
-        listPlayer.add(profilListeToDo!!)
-        val jsonProfiles = gsonPretty.toJson(listPlayer)
-
-        // Update the file
-        openFileOutput(filename, Context.MODE_PRIVATE).use {
-            it.write(jsonProfiles.toByteArray())
-        }
     }
 
     /*
     OK Button listener
     */
-    override fun onClick(v: View) {
-        when (v.id) {
-            R.id.OKBtnShowList -> {
-                val descItem = refListInput!!.text.toString()
-                createItem(descItem)
-            }
-        }
+    fun onAddListButtonClick(v: View) {
+        val descItem = refListInput!!.text.toString()
+        createItem(descItem)
     }
 
     override fun onStop() {
@@ -250,30 +229,22 @@ class ShowListActivity : GenericActivity(), ItemAdapter.ActionListener, View.OnC
     }
 
     private fun createItem(descItem : String) {
-        val listPlayer = getPlayerList()
+        //val listPlayer = getPlayerList()
 
         // Check if an item with the same description doesn't already exists
-        if (!listeToDo!!.rechercherItem(descItem)) {
-
-            // Update listeToDo and profilListeToDo
-            val newItem = ItemToDo(descItem)
-            profilListeToDo!!.ajoutItem(listeToDo, newItem)
-
-            // Serialize the new list of players
-            val gsonPretty = GsonBuilder().setPrettyPrinting().create()
-            listPlayer.add(profilListeToDo!!)
-            val jsonProfiles = gsonPretty.toJson(listPlayer)
-
-            /// Update the file
-            openFileOutput(filename, Context.MODE_PRIVATE).use {
-                it.write(jsonProfiles.toByteArray())
-            }
-
-            val dataSet: List<ItemToDo>? = listeToDo!!.lesItems
-            adapter!!.setData(dataSet)
-        } else {
+        try {
+            model.addItem(descItem)
+        } catch (e : Exception) {
             Toast.makeText(applicationContext, R.string.itemAlreadyExist, Toast.LENGTH_LONG).show()
+            return
         }
+        try {
+            model.saveUsersData()
+        } catch (e: Exception) {
+            Toast.makeText(applicationContext, "Failed to save, error : $e.message", Toast.LENGTH_LONG).show()
+        }
+        val dataSet: List<ItemToDo>? = model.currentList?.lesItems
+        adapter!!.setData(dataSet)
     }
 
     private fun deleteItem(item : ItemToDo) {

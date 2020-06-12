@@ -68,7 +68,9 @@ class ProfilListeToDo(var login : String = "") : Serializable {
         }
         return false
     }
-
+    fun listAlreadyExists(list : ListeToDo) : Boolean {
+        return listAlreadyExists(list.titreListeToDo)
+    }
     override fun toString(): String = "Listes du profil $login : $mesListeToDo"
 
 
