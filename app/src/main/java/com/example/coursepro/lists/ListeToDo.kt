@@ -34,6 +34,13 @@ class ListeToDo (var titreListeToDo: String = "",  var lesItems: MutableList<Ite
         lesItems = updatedItem
     }
 
+    fun addSection(section : String) {
+        if (!rechercherItem(section)) {
+            ajoutItem(ItemToDo(section, header = true))
+        }
+    }
+
+
     override fun toString(): String = "Liste $titreListeToDo composé de $lesItems"
 
 }

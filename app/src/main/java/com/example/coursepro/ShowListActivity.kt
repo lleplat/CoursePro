@@ -257,6 +257,10 @@ class ShowListActivity : GenericActivity(), ItemAdapter.ActionListener, View.OnC
 
             // Update listeToDo and profilListeToDo
             val newItem = ItemToDo(descItem)
+            newItem.setSectionName()
+            if (newItem.headerName != "") {
+                listeToDo!!.addSection(newItem.headerName)
+            }
             profilListeToDo!!.ajoutItem(listeToDo, newItem)
 
             // Serialize the new list of players

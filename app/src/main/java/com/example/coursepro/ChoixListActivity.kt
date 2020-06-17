@@ -136,7 +136,8 @@ class ChoixListActivity : GenericActivity(), ListeAdapter.ActionListener {
         }
 
         // Add the new list
-        profilListeToDo!!.ajouteListe(ListeToDo(title))
+        val newList = ListeToDo(title)
+        profilListeToDo!!.ajouteListe(newList)
         // Update the json list of profiles list
         listPlayer.add(profilListeToDo!!)
 
