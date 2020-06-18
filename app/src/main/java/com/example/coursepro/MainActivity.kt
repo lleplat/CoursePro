@@ -3,6 +3,7 @@ package com.example.coursepro
 import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.ArrayAdapter
 import android.widget.AutoCompleteTextView
@@ -12,7 +13,7 @@ import androidx.preference.PreferenceManager
 import com.example.coursepro.lists.ProfilListeToDo
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import java.io.File
+import java.io.*
 
 class MainActivity : AppCompatActivity() {
 
@@ -56,7 +57,6 @@ class MainActivity : AppCompatActivity() {
         refPseudoInput?.setText(pseudoPref)
         autoCompletion()
     }
-
 
 
 
