@@ -321,6 +321,7 @@ class ShowListActivity : GenericActivity(), ItemAdapter.ActionListener, View.OnC
 
 
             // Get product info from Google
+            /*
             activityScope.launch {
                 runCatching {
                     httpGet("https://search.lilo.org/results.php?q=" + barcode)
@@ -333,8 +334,9 @@ class ShowListActivity : GenericActivity(), ItemAdapter.ActionListener, View.OnC
                     }
                 )
             }
+            */
+
             // Get product info from API
-            /*
             activityScope.launch {
 
                 runCatching {
@@ -348,7 +350,7 @@ class ShowListActivity : GenericActivity(), ItemAdapter.ActionListener, View.OnC
                     }
                 )
             }
-            */
+
         }
     }
 
