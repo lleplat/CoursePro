@@ -1,5 +1,6 @@
 package com.example.coursepro.adapters
 
+import android.content.ClipData
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -21,16 +22,36 @@ class ItemAdapter(private val actionListener: ItemAdapter.ActionListener) : Recy
     fun setData(newDataSet : List<ItemToDo>?) {
         dataSet.clear()
         if (newDataSet != null) {
+
+            // Get all headers
+            val itemHeader : MutableList<ItemToDo> = mutableListOf()
             for (itemData in newDataSet) {
                 if (itemData.header && itemData.description != "Divers") {
-                    dataSet.add(itemData)
-                    for (item in newDataSet) {
-                        if (item.headerName == itemData.description) {
-                            dataSet.add(item)
-                        }
+                    itemHeader.add(itemData)
+                }
+            }
+
+            // Sort headers
+            val sectionNamesSorted = listOf("Bébé", "Boissons", "Produits frais", "Surgelés", "Fruits et légumes", "Maison & loisirs", "Hygiène & beauté", "Entretien", "Le marché", "Animalerie", "Epicerie salée", "Epicerie sucrée")
+            val itemHeadersSorted : MutableList<ItemToDo> = mutableListOf()
+            for (section in sectionNamesSorted) {
+                for (header in itemHeader) {
+                    if (header.description == section) {
+                        itemHeadersSorted.add(header)
                     }
                 }
             }
+
+            // Add headers and item to dataSet
+            for (header in itemHeadersSorted) {
+                dataSet.add(header)
+                for (item in newDataSet) {
+                    if (item.headerName == header.description) {
+                        dataSet.add(item)
+                    }
+                }
+            }
+
             // Add remaining items
             if (newDataSet.size != dataSet.size) {
                 dataSet.add(ItemToDo("Divers", header = true))
