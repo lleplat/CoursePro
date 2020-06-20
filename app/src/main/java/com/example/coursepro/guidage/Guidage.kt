@@ -6,7 +6,7 @@ import java.lang.IllegalArgumentException
 import java.util.ArrayList
 import kotlin.math.min
 
-class Guidage(){
+class Guidage() {
 
 // creation du graphe
     var baby = Vertex("Bébé",0)
@@ -39,8 +39,7 @@ class Guidage(){
     var categoriesList : List<Vertex> = listOf(baby,drinks,freshProducts,frozenFood,fruitVegetables,housePastimes,hygieneBeauty,maintenance,market,petShop,saltedGrocery,sugaryGrocery)
 
 
-
-//rend deux sommets voisins en empêchant les doublons
+    //rend deux sommets voisins en empêchant les doublons
     fun mkVoisins (vertex1: Vertex, vertex2 : Vertex)  {
         if (!vertex2.adjList.contains(vertex1.id)){
             vertex1.adjList.add(vertex2.id)
@@ -51,8 +50,8 @@ class Guidage(){
     //crée les voisins d'un sommet
     fun mkVoisinsFromList(vertex : Vertex,list : List<Int>) {
 
-            for (i in list.indices){
-                mkVoisins(vertex,categoriesList[i])
+        for (i in list.indices){
+            mkVoisins(vertex,categoriesList[i])
 
         }
 
@@ -112,19 +111,19 @@ class Guidage(){
         return (findClosestCategorieNonVisitee(aVisiter[0],listeToDo,Dejavisites,aVisiter.subList(1,aVisiter.size)))
 
 
-        }
+    }
 
 
     //retourne le prochain item à récupérer OU null si tous les items ont déjà été récupérés
     //il ne faut pas oublier de changer le statut des items récupérés avec une autre fonction
     fun getNextItem(itemToDo: ItemToDo, listeToDo: ListeToDo) : ItemToDo? {
         val categorie = getCategorieItem(itemToDo)
-    //s'il reste des items pas encore récupérés dans la même catégorie
+        //s'il reste des items pas encore récupérés dans la même catégorie
         if (getMemeCategorie(itemToDo,listeToDo).size!=0){
             return getMemeCategorie(itemToDo,listeToDo)[0]
         }
-    //sinon on cherche la catégorie la plus proche dans laquelle il reste des items à récupérer
-    //si cette catégorie n'existe pas on retourne null : on a fini la liste des courses
+        //sinon on cherche la catégorie la plus proche dans laquelle il reste des items à récupérer
+        //si cette catégorie n'existe pas on retourne null : on a fini la liste des courses
         else{
             val i = findClosestCategorieNonVisitee(categorie,listeToDo)
             if (i==-1){
@@ -133,19 +132,22 @@ class Guidage(){
             else {
                 return(findCategorieDansListe(i,listeToDo)[0])
             }
-            }
         }
     }
 
-
-     class Vertex//Vertex Constructor.
-         (nom: String, id : Int) {
+    class Vertex//Vertex Constructor.
+        (nom: String, id : Int) {
         var nom //int vertexNum
                 = nom
-         var id = id
+        var id = id
         var adjList //list of adjacent vertices.
                 : MutableList<Int> = mutableListOf()
 
 
+
+    }
      }
+
+
+
 

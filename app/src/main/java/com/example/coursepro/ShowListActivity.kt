@@ -23,6 +23,8 @@ import github.com.vikramezhil.dks.speech.DksListener
 import java.io.File
 import java.util.*
 import kotlin.collections.ArrayList
+import com.example.coursepro.guidage.Guidage
+
 
 class ShowListActivity : GenericActivity(), ItemAdapter.ActionListener, View.OnClickListener {
 
@@ -34,7 +36,7 @@ class ShowListActivity : GenericActivity(), ItemAdapter.ActionListener, View.OnC
     private var listeToDo : ListeToDo? = null
     private var filename : String? = null
     private lateinit var dks: Dks
-
+    private var guidage : Guidage = Guidage()
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -51,6 +53,8 @@ class ShowListActivity : GenericActivity(), ItemAdapter.ActionListener, View.OnC
         filename = "players"
 
         refBtnOK?.setOnClickListener(this)
+
+        guidage.init()
 
 
         /*
@@ -231,6 +235,15 @@ class ShowListActivity : GenericActivity(), ItemAdapter.ActionListener, View.OnC
         openFileOutput(filename, Context.MODE_PRIVATE).use {
             it.write(jsonProfiles.toByteArray())
         }
+
+        val nextItem = guidage.getNextItem(itemToDo,listeToDo!!)
+        if (nextItem !=null) {
+
+            }
+        else{
+
+        }
+
     }
 
     /*
