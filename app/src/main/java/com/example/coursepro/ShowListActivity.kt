@@ -104,6 +104,7 @@ class ShowListActivity : GenericActivity(), ItemAdapter.ActionListener, View.OnC
             }
         })
 
+
         dks.startSpeechRecognition()
     }
 
