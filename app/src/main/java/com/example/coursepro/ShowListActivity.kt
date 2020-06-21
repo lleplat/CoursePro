@@ -3,6 +3,7 @@ package com.example.coursepro
 import android.content.Context
 import android.content.SharedPreferences
 import android.os.Bundle
+import android.speech.tts.TextToSpeech
 import android.util.Log
 import androidx.preference.PreferenceManager
 import android.view.View
@@ -32,7 +33,8 @@ import kotlin.concurrent.timer
 import kotlin.concurrent.timerTask
 
 
-class ShowListActivity : GenericActivity(), ItemAdapter.ActionListener, View.OnClickListener {
+class ShowListActivity : GenericActivity(), ItemAdapter.ActionListener, View.OnClickListener,
+    TextToSpeech.OnInitListener {
 
     private var adapter : ItemAdapter? = null
     private var refBtnOK: Button? = null
@@ -44,6 +46,7 @@ class ShowListActivity : GenericActivity(), ItemAdapter.ActionListener, View.OnC
     private lateinit var dks: Dks
     private var guidage : Guidage = Guidage()
     private var list : RecyclerView? = null
+    private var tts : TextToSpeech? = null
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -62,6 +65,8 @@ class ShowListActivity : GenericActivity(), ItemAdapter.ActionListener, View.OnC
         refBtnOK?.setOnClickListener(this)
 
         guidage.init()
+
+        tts = TextToSpeech(this, this)
 
 
         /*
@@ -247,6 +252,9 @@ class ShowListActivity : GenericActivity(), ItemAdapter.ActionListener, View.OnC
         val nextItem = guidage.getNextItem(itemToDo,listeToDo!!)
         if (nextItem !=null){
             val view : CheckBox = list!!.findViewWithTag("item"+nextItem.description)
+
+            tts!!.speak("L'item suivant est " + nextItem.description,TextToSpeech.QUEUE_FLUSH,null,"")
+
             view.setTextColor(ContextCompat.getColor(applicationContext,R.color.colorPrimary))
             timer("timer",false,0,2000) {view.setTextColor(ContextCompat.getColor(applicationContext,R.color.black))}
         }
@@ -268,6 +276,8 @@ class ShowListActivity : GenericActivity(), ItemAdapter.ActionListener, View.OnC
     override fun onStop() {
         super.onStop()
         dks.closeSpeechOperations()
+        tts!!.stop()
+        tts!!.shutdown()
     }
 
     private fun createItem(descItem : String) {
@@ -339,5 +349,20 @@ class ShowListActivity : GenericActivity(), ItemAdapter.ActionListener, View.OnC
             }
         }
         return listPlayer
+    }
+
+    override fun onInit(status: Int) {
+        if (status == TextToSpeech.SUCCESS) {
+            // set US English as language for tts
+            val result = tts!!.setLanguage(Locale.FRANCE)
+
+            if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
+                Log.e("TTS","La langue spécifiée n'est pas supportée")
+            }
+
+        } else {
+            Log.e("TTS", "Initilization Failed!")
+        }
+
     }
 }
