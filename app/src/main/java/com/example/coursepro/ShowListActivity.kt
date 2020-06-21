@@ -6,9 +6,13 @@ import android.os.Bundle
 import android.util.Log
 import androidx.preference.PreferenceManager
 import android.view.View
+import android.view.ViewGroup
 import android.widget.Button
+import android.widget.CheckBox
 import android.widget.EditText
 import android.widget.Toast
+import androidx.appcompat.view.menu.MenuView
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.coursepro.adapters.ItemAdapter
@@ -24,6 +28,8 @@ import java.io.File
 import java.util.*
 import kotlin.collections.ArrayList
 import com.example.coursepro.guidage.Guidage
+import kotlin.concurrent.timer
+import kotlin.concurrent.timerTask
 
 
 class ShowListActivity : GenericActivity(), ItemAdapter.ActionListener, View.OnClickListener {
@@ -37,6 +43,7 @@ class ShowListActivity : GenericActivity(), ItemAdapter.ActionListener, View.OnC
     private var filename : String? = null
     private lateinit var dks: Dks
     private var guidage : Guidage = Guidage()
+    private var list : RecyclerView? = null
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -68,10 +75,11 @@ class ShowListActivity : GenericActivity(), ItemAdapter.ActionListener, View.OnC
         /*
         RecyclerView
          */
-        val list : RecyclerView = findViewById(R.id.listOfItem)
+        list = findViewById(R.id.listOfItem)
 
-        list.adapter = adapter
-        list.layoutManager = LinearLayoutManager(this)
+
+        list!!.adapter = adapter
+        list!!.layoutManager = LinearLayoutManager(this)
 
         getPlayerList()
         val dataSet : List<ItemToDo>? = listeToDo!!.lesItems
@@ -237,11 +245,10 @@ class ShowListActivity : GenericActivity(), ItemAdapter.ActionListener, View.OnC
         }
 
         val nextItem = guidage.getNextItem(itemToDo,listeToDo!!)
-        if (nextItem !=null) {
-
-            }
-        else{
-
+        if (nextItem !=null){
+            val view : CheckBox = list!!.findViewWithTag("item"+nextItem.description)
+            view.setTextColor(ContextCompat.getColor(applicationContext,R.color.colorPrimary))
+            timer("timer",false,0,2000) {view.setTextColor(ContextCompat.getColor(applicationContext,R.color.black))}
         }
 
     }

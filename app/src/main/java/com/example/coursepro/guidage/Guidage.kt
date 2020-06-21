@@ -33,7 +33,7 @@ class Guidage() {
         mkVoisinsFromList(sugaryGrocery, listOf( 2,4,8))
         mkVoisinsFromList(freshProducts, listOf( 4,8,3))
         mkVoisinsFromList(fruitVegetables, listOf( 8,3))
-        mkVoisinsFromList(market, listOf( 3))
+        mkVoisinsFromList(market, listOf(3))
     }
 
     var categoriesList : List<Vertex> = listOf(baby,drinks,freshProducts,frozenFood,fruitVegetables,housePastimes,hygieneBeauty,maintenance,market,petShop,saltedGrocery,sugaryGrocery)
