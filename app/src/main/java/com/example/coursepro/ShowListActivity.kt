@@ -44,6 +44,7 @@ class ShowListActivity : GenericActivity(), ItemAdapter.ActionListener, View.OnC
     private var filename : String? = null
     private lateinit var dks: Dks
 
+    // Coroutine for API calls
     val activityScope = CoroutineScope(
         SupervisorJob()
                 + Dispatchers.Main
@@ -101,6 +102,7 @@ class ShowListActivity : GenericActivity(), ItemAdapter.ActionListener, View.OnC
                 //Log.d("DKS", "Speech result - $liveSpeechResult")
             }
 
+            // Function launched at the end of a sentence
             override fun onDksFinalSpeechResult(speechResult: String) {
                 Log.d("DKS", "Final speech result - $speechResult")
                 //checkItemVoice(speechResult)
@@ -128,6 +130,7 @@ class ShowListActivity : GenericActivity(), ItemAdapter.ActionListener, View.OnC
 
     /*
     Voice listener : check / uncheck an item if the works spoken match one of the item
+    We decided to not use it since we can scan the products
      */
     private fun checkItemVoice(sentence : String) {
 
@@ -268,73 +271,15 @@ class ShowListActivity : GenericActivity(), ItemAdapter.ActionListener, View.OnC
         }
     }
 
-    private fun convertInputStreamToString(inputStream: InputStream): String {
-        val bufferedReader:BufferedReader? = BufferedReader(InputStreamReader(inputStream))
 
-        var line:String? = bufferedReader?.readLine()
-        var result:String = ""
-
-        while (line != null) {
-            result += line
-            line = bufferedReader?.readLine()
-        }
-
-        inputStream.close()
-        return result
-    }
-
-    private suspend fun httpGet(myURL: String?): String? {
-
-        val result = withContext(Dispatchers.IO) {
-            val inputStream: InputStream
-
-
-            // create URL
-            val url: URL = URL(myURL)
-
-            // create HttpURLConnection
-            val conn: HttpURLConnection = url.openConnection() as HttpURLConnection
-
-            // make GET request to the given URL
-            conn.connect()
-
-            // receive response as inputStream
-            inputStream = conn.inputStream
-
-            // convert inputstream to string
-            if (inputStream != null)
-                convertInputStreamToString(inputStream)
-            else
-                "Did not work!"
-
-
-        }
-        return result
-    }
-
-
+    /*
+    Function launched when a product has just been scanned
+     */
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
         if (data != null) {
             val barcode: String? = data.getStringExtra("barcode")
-
-
-            // Get product info from Google
-            /*
-            activityScope.launch {
-                runCatching {
-                    httpGet("https://search.lilo.org/results.php?q=" + barcode)
-                }.fold(
-                    onSuccess = {
-                        Log.i("PMR", it!!.contains("pains aux lait").toString())
-                    },
-                    onFailure = {
-                        Log.e("PMR", "erreur", it)
-                    }
-                )
-            }
-            */
 
             // Get product info from API
             activityScope.launch {
@@ -358,6 +303,7 @@ class ShowListActivity : GenericActivity(), ItemAdapter.ActionListener, View.OnC
         super.onStop()
         dks.closeSpeechOperations()
     }
+
 
     private fun createItem(descItem : String) {
         val listPlayer = getPlayerList()

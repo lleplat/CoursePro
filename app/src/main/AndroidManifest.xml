@@ -22,7 +22,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".BarcodeActivity"></activity>
+        <activity android:name=".BarcodeActivity" />
         <activity android:name=".ShowListActivity" />
         <activity android:name=".SettingsActivity" />
         <activity android:name=".GenericActivity" />

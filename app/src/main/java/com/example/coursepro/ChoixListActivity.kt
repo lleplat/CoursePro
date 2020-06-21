@@ -4,11 +4,13 @@ import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
-import androidx.preference.PreferenceManager
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
+import android.widget.ImageButton
 import android.widget.Toast
+import androidx.preference.PreferenceManager
+import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.coursepro.adapters.ListeAdapter
@@ -18,6 +20,7 @@ import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.google.gson.reflect.TypeToken
 import java.io.File
+
 
 class ChoixListActivity : GenericActivity(), ListeAdapter.ActionListener {
 
@@ -121,6 +124,7 @@ class ChoixListActivity : GenericActivity(), ListeAdapter.ActionListener {
         }
         return listPlayer
     }
+
 
     // Intents :
 

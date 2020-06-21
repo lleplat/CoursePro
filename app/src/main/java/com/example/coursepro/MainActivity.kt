@@ -53,6 +53,8 @@ class MainActivity : AppCompatActivity() {
     override fun onStart() {
         super.onStart()
 
+
+        // Write the pseudo
         val pseudoPref : String? = prefs!!.getString("pseudo", "Pseudo")
         refPseudoInput?.setText(pseudoPref)
         autoCompletion()
@@ -79,6 +81,8 @@ class MainActivity : AppCompatActivity() {
         val adapter : ArrayAdapter<String> = ArrayAdapter<String>(this, android.R.layout.simple_dropdown_item_1line, pseudoList)
         refPseudoInput!!.setAdapter(adapter)
     }
+
+
 
     // Intents
 
