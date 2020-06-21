@@ -1,11 +1,11 @@
 package com.example.coursepro
 
 import android.content.Context
+import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
 import android.speech.tts.TextToSpeech
 import android.util.Log
-import androidx.preference.PreferenceManager
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
@@ -14,8 +14,13 @@ import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.view.menu.MenuView
 import androidx.core.content.ContextCompat
+import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.android.volley.Request
+import com.android.volley.Response
+import com.android.volley.toolbox.StringRequest
+import com.android.volley.toolbox.Volley
 import com.example.coursepro.adapters.ItemAdapter
 import com.example.coursepro.lists.ItemToDo
 import com.example.coursepro.lists.ListeToDo
@@ -25,7 +30,10 @@ import com.google.gson.GsonBuilder
 import com.google.gson.reflect.TypeToken
 import github.com.vikramezhil.dks.speech.Dks
 import github.com.vikramezhil.dks.speech.DksListener
-import java.io.File
+import kotlinx.coroutines.*
+import java.io.*
+import java.net.HttpURLConnection
+import java.net.URL
 import java.util.*
 import kotlin.collections.ArrayList
 import com.example.coursepro.guidage.Guidage
@@ -33,20 +41,35 @@ import kotlin.concurrent.timer
 import kotlin.concurrent.timerTask
 
 
+
 class ShowListActivity : GenericActivity(), ItemAdapter.ActionListener, View.OnClickListener,
     TextToSpeech.OnInitListener {
 
     private var adapter : ItemAdapter? = null
     private var refBtnOK: Button? = null
+    private var refBtnBarcode: Button? = null
     private var refListInput: EditText? = null
     private var prefs : SharedPreferences?= null
     private var profilListeToDo : ProfilListeToDo? = null
     private var listeToDo : ListeToDo? = null
     private var filename : String? = null
     private lateinit var dks: Dks
+
     private var guidage : Guidage = Guidage()
     private var list : RecyclerView? = null
     private var tts : TextToSpeech? = null
+
+
+    // Coroutine for API calls
+    val activityScope = CoroutineScope(
+        SupervisorJob()
+                + Dispatchers.Main
+                + CoroutineExceptionHandler { _, throwable ->
+            Log.e("PMR", "Coroutine exception : ", throwable);
+        }
+    )
+
+
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -57,12 +80,14 @@ class ShowListActivity : GenericActivity(), ItemAdapter.ActionListener, View.OnC
         Declarations
          */
         refBtnOK = findViewById(R.id.OKBtnShowList)
+        refBtnBarcode = findViewById(R.id.BarcodeBtnShowList)
         refListInput = findViewById(R.id.listInputShowList)
         adapter = newAdapter()
         prefs = PreferenceManager.getDefaultSharedPreferences(this)
         filename = "players"
 
         refBtnOK?.setOnClickListener(this)
+        refBtnBarcode?.setOnClickListener(this)
 
         guidage.init()
 
@@ -99,6 +124,7 @@ class ShowListActivity : GenericActivity(), ItemAdapter.ActionListener, View.OnC
                 //Log.d("DKS", "Speech result - $liveSpeechResult")
             }
 
+            // Function launched at the end of a sentence
             override fun onDksFinalSpeechResult(speechResult: String) {
                 Log.d("DKS", "Final speech result - $speechResult")
                 //checkItemVoice(speechResult)
@@ -127,6 +153,7 @@ class ShowListActivity : GenericActivity(), ItemAdapter.ActionListener, View.OnC
 
     /*
     Voice listener : check / uncheck an item if the works spoken match one of the item
+    We decided to not use it since we can scan the products
      */
     private fun checkItemVoice(sentence : String) {
 
@@ -270,6 +297,39 @@ class ShowListActivity : GenericActivity(), ItemAdapter.ActionListener, View.OnC
                 val descItem = refListInput!!.text.toString()
                 createItem(descItem)
             }
+            R.id.BarcodeBtnShowList -> {
+                val intent = Intent(this, BarcodeActivity::class.java)
+                val requestCode = 1
+                startActivityForResult(intent, requestCode)
+            }
+        }
+    }
+
+
+    /*
+    Function launched when a product has just been scanned
+     */
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        if (data != null) {
+            val barcode: String? = data.getStringExtra("barcode")
+
+            // Get product info from API
+            activityScope.launch {
+
+                runCatching {
+                    DataProvider.getProductInfo(barcode!!)
+                }.fold(
+                    onSuccess = {
+                        checkItemVoice(it)
+                    },
+                    onFailure = {
+                        Toast.makeText(applicationContext, "Le produit n'a pas été trouvé", Toast.LENGTH_LONG).show()
+                    }
+                )
+            }
+
         }
     }
 
@@ -279,6 +339,7 @@ class ShowListActivity : GenericActivity(), ItemAdapter.ActionListener, View.OnC
         tts!!.stop()
         tts!!.shutdown()
     }
+
 
     private fun createItem(descItem : String) {
         val listPlayer = getPlayerList()

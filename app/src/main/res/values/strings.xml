@@ -10,4 +10,7 @@
     <string name="itemAlreadyExist">Cet item existe déjà.</string>
     <string name="pseudoDeleted">Les profils existants ont été supprimés.</string>
     <string name="quantity">Quantité</string>
+    <string name="scanBarcode">Scanner le code barre</string>
+    <string name="launchBarcode">Lancer la reconnaissance par code barre</string>
+    <string name="welcome">Bienvenue sur l\'app CoursePRO !</string>
 </resources>
