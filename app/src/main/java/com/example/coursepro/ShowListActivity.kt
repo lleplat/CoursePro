@@ -336,8 +336,10 @@ class ShowListActivity : GenericActivity(), ItemAdapter.ActionListener, View.OnC
     override fun onStop() {
         super.onStop()
         dks.closeSpeechOperations()
-        tts!!.stop()
-        tts!!.shutdown()
+        if (tts!=null){
+            tts!!.stop()
+            tts!!.shutdown()
+        }
     }
 
 
