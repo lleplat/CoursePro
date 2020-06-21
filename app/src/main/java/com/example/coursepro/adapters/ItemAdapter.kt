@@ -1,5 +1,6 @@
 package com.example.coursepro.adapters
 
+
 import android.content.ClipData
 import android.util.Log
 import android.view.LayoutInflater
@@ -8,8 +9,10 @@ import android.view.ViewGroup
 import android.widget.CheckBox
 import android.widget.CompoundButton
 import android.widget.TextView
+import androidx.core.graphics.red
 import androidx.recyclerview.widget.RecyclerView
 import com.example.coursepro.R
+import com.example.coursepro.R.*
 import com.example.coursepro.lists.ItemToDo
 import java.lang.IllegalArgumentException
 
@@ -74,10 +77,10 @@ class ItemAdapter(private val actionListener: ItemAdapter.ActionListener) : Recy
 
         return when (viewType) {
             HEADER -> {
-                HeaderItemViewHolder(inflater.inflate(R.layout.item_header, parent, false))
+                HeaderItemViewHolder(inflater.inflate(layout.item_header, parent, false))
             }
             ITEM -> {
-                ItemViewHolder(inflater.inflate(R.layout.item, parent, false))
+                ItemViewHolder(inflater.inflate(layout.item, parent, false))
             }
             else -> {
                 throw IllegalArgumentException("View type $viewType not supported")
@@ -100,12 +103,13 @@ class ItemAdapter(private val actionListener: ItemAdapter.ActionListener) : Recy
             }
             is ItemViewHolder -> {
                 holder.bind(dataSet[position])
+                holder.itemId
             }
         }
     }
 
     inner class ItemViewHolder(itemView : View) : RecyclerView.ViewHolder(itemView) {
-        private val descItem : CheckBox = itemView.findViewById(R.id.descItem)
+        private val descItem : CheckBox = itemView.findViewById(id.descItem)
 
         init {
             val checkItemView : CheckBox = (itemView as ViewGroup).getChildAt(0) as CheckBox
@@ -125,18 +129,25 @@ class ItemAdapter(private val actionListener: ItemAdapter.ActionListener) : Recy
         fun bind(itemToDo : ItemToDo) {
             descItem.text = itemToDo.description
             descItem.isChecked = itemToDo.fait
+            descItem.setTag("item"+itemToDo.description)
+
         }
     }
 
     inner class HeaderItemViewHolder(itemView : View) : RecyclerView.ViewHolder(itemView) {
-        private val title : TextView = itemView.findViewById(R.id.titleHeader)
+        private var title : TextView = itemView.findViewById(id.titleHeader)
+
 
         init {
 
         }
 
+        @SuppressLint("ResourceAsColor")
         fun bind(itemToDo : ItemToDo) {
+
             title.text = itemToDo.description
+
+
         }
     }
 

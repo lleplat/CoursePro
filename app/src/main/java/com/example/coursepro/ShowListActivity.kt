@@ -4,11 +4,16 @@ import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
+import android.speech.tts.TextToSpeech
 import android.util.Log
 import android.view.View
+import android.view.ViewGroup
 import android.widget.Button
+import android.widget.CheckBox
 import android.widget.EditText
 import android.widget.Toast
+import androidx.appcompat.view.menu.MenuView
+import androidx.core.content.ContextCompat
 import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -30,9 +35,15 @@ import java.io.*
 import java.net.HttpURLConnection
 import java.net.URL
 import java.util.*
+import kotlin.collections.ArrayList
+import com.example.coursepro.guidage.Guidage
+import kotlin.concurrent.timer
+import kotlin.concurrent.timerTask
 
 
-class ShowListActivity : GenericActivity(), ItemAdapter.ActionListener, View.OnClickListener {
+
+class ShowListActivity : GenericActivity(), ItemAdapter.ActionListener, View.OnClickListener,
+    TextToSpeech.OnInitListener {
 
     private var adapter : ItemAdapter? = null
     private var refBtnOK: Button? = null
@@ -44,6 +55,11 @@ class ShowListActivity : GenericActivity(), ItemAdapter.ActionListener, View.OnC
     private var filename : String? = null
     private lateinit var dks: Dks
 
+    private var guidage : Guidage = Guidage()
+    private var list : RecyclerView? = null
+    private var tts : TextToSpeech? = null
+
+
     // Coroutine for API calls
     val activityScope = CoroutineScope(
         SupervisorJob()
@@ -52,6 +68,7 @@ class ShowListActivity : GenericActivity(), ItemAdapter.ActionListener, View.OnC
             Log.e("PMR", "Coroutine exception : ", throwable);
         }
     )
+
 
 
 
@@ -72,6 +89,10 @@ class ShowListActivity : GenericActivity(), ItemAdapter.ActionListener, View.OnC
         refBtnOK?.setOnClickListener(this)
         refBtnBarcode?.setOnClickListener(this)
 
+        guidage.init()
+
+        tts = TextToSpeech(this, this)
+
 
         /*
         Get info from ChoixListActivity
@@ -84,10 +105,11 @@ class ShowListActivity : GenericActivity(), ItemAdapter.ActionListener, View.OnC
         /*
         RecyclerView
          */
-        val list : RecyclerView = findViewById(R.id.listOfItem)
+        list = findViewById(R.id.listOfItem)
 
-        list.adapter = adapter
-        list.layoutManager = LinearLayoutManager(this)
+
+        list!!.adapter = adapter
+        list!!.layoutManager = LinearLayoutManager(this)
 
         getPlayerList()
         val dataSet : List<ItemToDo>? = listeToDo!!.lesItems
@@ -124,6 +146,7 @@ class ShowListActivity : GenericActivity(), ItemAdapter.ActionListener, View.OnC
                 Log.d("DKS", "errMsg - $errMsg")
             }
         })
+
 
         dks.startSpeechRecognition()
     }
@@ -252,6 +275,17 @@ class ShowListActivity : GenericActivity(), ItemAdapter.ActionListener, View.OnC
         openFileOutput(filename, Context.MODE_PRIVATE).use {
             it.write(jsonProfiles.toByteArray())
         }
+
+        val nextItem = guidage.getNextItem(itemToDo,listeToDo!!)
+        if (nextItem !=null){
+            val view : CheckBox = list!!.findViewWithTag("item"+nextItem.description)
+
+            tts!!.speak("L'item suivant est " + nextItem.description,TextToSpeech.QUEUE_FLUSH,null,"")
+
+            view.setTextColor(ContextCompat.getColor(applicationContext,R.color.colorPrimary))
+            timer("timer",false,0,2000) {view.setTextColor(ContextCompat.getColor(applicationContext,R.color.black))}
+        }
+
     }
 
     /*
@@ -302,6 +336,8 @@ class ShowListActivity : GenericActivity(), ItemAdapter.ActionListener, View.OnC
     override fun onStop() {
         super.onStop()
         dks.closeSpeechOperations()
+        tts!!.stop()
+        tts!!.shutdown()
     }
 
 
@@ -374,5 +410,20 @@ class ShowListActivity : GenericActivity(), ItemAdapter.ActionListener, View.OnC
             }
         }
         return listPlayer
+    }
+
+    override fun onInit(status: Int) {
+        if (status == TextToSpeech.SUCCESS) {
+            // set US English as language for tts
+            val result = tts!!.setLanguage(Locale.FRANCE)
+
+            if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
+                Log.e("TTS","La langue spécifiée n'est pas supportée")
+            }
+
+        } else {
+            Log.e("TTS", "Initilization Failed!")
+        }
+
     }
 }

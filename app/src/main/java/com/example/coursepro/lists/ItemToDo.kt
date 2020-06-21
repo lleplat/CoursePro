@@ -1,9 +1,10 @@
 package com.example.coursepro.lists
 import android.util.Log
 import com.example.coursepro.MyApp
+import com.example.coursepro.guidage.Guidage
 import java.io.*
 
-class ItemToDo (var description : String = "", var fait : Boolean = false, var header : Boolean = false, var headerName : String = "") : Serializable {
+class ItemToDo (var description : String = "", var fait : Boolean = false, var header : Boolean = false, var headerName : String = "") : Serializable{
 
 
 
